@@ -402,6 +402,30 @@ export function parseStopDepartures(json, id) {
 }
 
 /**
+ * Merge an incoming arrivals list against the current one, preserving object
+ * references for rows that have not changed. Svelte's keyed {#each} skips DOM
+ * updates for rows whose object reference is unchanged, eliminating per-tick
+ * flicker even though the outer array is replaced on every fetch.
+ *
+ * @param {Array} prev - Current arrivals array held in $state
+ * @param {Array} next - Freshly formatted arrivals from the latest fetch
+ * @returns {Array} - next, with unchanged rows replaced by their prev reference
+ */
+export function diffArrivals(prev, next) {
+	const prevMap = new Map(prev.map((a) => [a.tripId, a]));
+	return next.map((n) => {
+		const p = prevMap.get(n.tripId);
+		if (!p) return n;
+		const unchanged =
+			p.min === n.min &&
+			p.status === n.status &&
+			p.delta === n.delta &&
+			p.departureAt === n.departureAt;
+		return unchanged ? p : n;
+	});
+}
+
+/**
  * Translates a given text into the specified target language by proxying
  * through Google’s unofficial translate endpoint.
  *
