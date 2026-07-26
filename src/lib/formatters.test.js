@@ -6,6 +6,7 @@ import {
 	formatDateTime,
 	formatTime,
 	formatDate,
+	diffArrivals,
 	formatCurrentTime,
 	formatTimestamp,
 	formatArrivalStatus,
@@ -49,6 +50,29 @@ describe('formatters', () => {
 		test('formatTimestamp gives readable short format', () => {
 			const ts = new Date('2025-06-18T00:00:00').getTime();
 			expect(formatTimestamp(ts)).toMatch(/Wed, Jun 18, 2025/);
+		});
+	});
+
+	describe('diffArrivals', () => {
+		test('preserves object reference when row is unchanged', () => {
+			const prev = [{ tripId: 'A', min: 5, status: 'ONTIME', delta: 0, departureAt: 1000 }];
+			const next = [{ tripId: 'A', min: 5, status: 'ONTIME', delta: 0, departureAt: 1000 }];
+			const result = diffArrivals(prev, next);
+			expect(result[0]).toBe(prev[0]);
+		});
+
+		test('returns new object when row has changed', () => {
+			const prev = [{ tripId: 'A', min: 5, status: 'ONTIME', delta: 0, departureAt: 1000 }];
+			const next = [{ tripId: 'A', min: 4, status: 'ONTIME', delta: 0, departureAt: 1000 }];
+			const result = diffArrivals(prev, next);
+			expect(result[0]).toBe(next[0]);
+		});
+
+		test('returns new object for a row not in prev', () => {
+			const prev = [];
+			const next = [{ tripId: 'A', min: 5, status: 'ONTIME', delta: 0, departureAt: 1000 }];
+			const result = diffArrivals(prev, next);
+			expect(result[0]).toBe(next[0]);
 		});
 	});
 
