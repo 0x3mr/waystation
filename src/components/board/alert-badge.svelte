@@ -77,7 +77,7 @@
 		>
 			{t.board_service_advisory()}{#if windowStart}
 				· {windowStart}{#if windowEnd}
-					→ {windowEnd}{/if}{/if}
+					{getLocale() === 'ar' ? '←' : '→'} {windowEnd}{/if}{/if}
 		</div>
 		<div
 			style:font-size="22px"
