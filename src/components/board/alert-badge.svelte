@@ -16,21 +16,33 @@
 	$effect(() => {
 		const locale = getLocale();
 		const raw = rawHeadline;
+		let cancelled = false;
+
 		if (!raw) {
 			translatedHeadline = '';
 			return;
 		}
+
 		if (locale === 'en') {
 			translatedHeadline = raw;
 			return;
 		}
+
 		translate(raw, locale)
 			.then((text) => {
-				translatedHeadline = text;
+				if (!cancelled) {
+					translatedHeadline = text;
+				}
 			})
 			.catch(() => {
-				translatedHeadline = raw;
+				if (!cancelled) {
+					translatedHeadline = raw;
+				}
 			});
+
+		return () => {
+			cancelled = true;
+		};
 	});
 
 	const headline = $derived(translatedHeadline || rawHeadline);
