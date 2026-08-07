@@ -85,6 +85,11 @@
 			style:line-height="1.25"
 			style:margin-top="4px"
 			style:color="var(--ink)"
+			style:direction={getLocale() === 'ar' ? 'rtl' : 'ltr'}
+			style:text-align={getLocale() === 'ar' ? 'right' : 'left'}
+			style:unicode-bidi="plaintext"
+			style:overflow-wrap="break-word"
+			style:word-break="normal"
 		>
 			{headline}
 		</div>
