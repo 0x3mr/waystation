@@ -1,10 +1,12 @@
 <script>
+	import * as t from '$lib/paraglide/messages.js';
+
 	const STATUS = {
-		ONTIME: { glyph: '●', label: 'ON TIME', weight: 500 },
-		EARLY: { glyph: '▲', label: 'EARLY', weight: 700 },
-		LATE: { glyph: '▼', label: 'DELAYED', weight: 700 },
-		CANCEL: { glyph: '✕', label: 'CANCELED', weight: 700 },
-		SCHED: { glyph: '○', label: 'SCHEDULED', weight: 500 }
+		ONTIME: { glyph: '●', weight: 500 },
+		EARLY: { glyph: '▲', weight: 700 },
+		LATE: { glyph: '▼', weight: 700 },
+		CANCEL: { glyph: '✕', weight: 700 },
+		SCHED: { glyph: '○', weight: 500 }
 	};
 
 	let { status, delta = null, large = false } = $props();
@@ -13,15 +15,22 @@
 	const size = $derived(large ? 28 : 22);
 	const label = $derived.by(() => {
 		if (!s) return '';
-		if (status === 'EARLY' && delta != null) return `${Math.abs(delta)} MIN EARLY`;
-		if (status === 'LATE' && delta != null) return `${delta} MIN LATE`;
-		return s.label;
+		if (status === 'EARLY' && delta != null)
+			return t.board_status_min_early({ delta: Math.abs(delta) });
+		if (status === 'LATE' && delta != null) return t.board_status_min_late({ delta });
+		if (status === 'ONTIME') return t.board_status_ontime();
+		if (status === 'EARLY') return t.board_status_early();
+		if (status === 'LATE') return t.board_status_delayed();
+		if (status === 'CANCEL') return t.board_status_canceled();
+		if (status === 'SCHED') return t.board_status_scheduled();
+		return '';
 	});
 </script>
 
 {#if s}
 	<span
 		class="status-{status} sc tnum"
+		dir="ltr"
 		style:display="inline-flex"
 		style:align-items="center"
 		style:gap="10px"

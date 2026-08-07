@@ -1,5 +1,6 @@
 <script>
-	import { formatTime } from '$lib/formatters.js';
+	import * as t from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
 
 	let { arrival } = $props();
 
@@ -7,10 +8,23 @@
 	const isSched = $derived(arrival.status === 'SCHED');
 	const showAsClock = $derived(isSched || arrival.min > 30);
 	const showNow = $derived(!isSched && arrival.min <= 0);
-	const clock = $derived(formatTime(arrival.departureAt));
+	const isRTL = $derived(getLocale() === 'ar');
+
+	// Always split into numeric part (hm) and period marker (ap).
+	// Render ap at a small fixed size so it never overflows or wraps,
+	// regardless of locale (AM, a. m., ص, etc.).
 	const clockParts = $derived.by(() => {
-		const m = /(\d+:\d+)\s*(AM|PM)/i.exec(clock);
-		return m ? { hm: m[1], ap: m[2] } : { hm: clock, ap: '' };
+		const parts = new Intl.DateTimeFormat(getLocale(), {
+			hour: 'numeric',
+			minute: '2-digit',
+			hour12: true
+		}).formatToParts(new Date(arrival.departureAt));
+		const hm = parts
+			.filter((p) => ['hour', 'literal', 'minute'].includes(p.type))
+			.map((p) => p.value)
+			.join('');
+		const ap = parts.find((p) => p.type === 'dayPeriod')?.value ?? '';
+		return { hm, ap };
 	});
 </script>
 
@@ -33,7 +47,7 @@
 			style:color="var(--ink-mute)"
 			style:margin-top="6px"
 		>
-			DO NOT BOARD
+			{t.board_do_not_board()}
 		</div>
 	</div>
 {:else if showNow}
@@ -46,7 +60,7 @@
 			style:letter-spacing="0.04em"
 			style:color="var(--accent)"
 		>
-			NOW
+			{t.board_now()}
 		</div>
 	</div>
 {:else if showAsClock}
@@ -58,12 +72,19 @@
 			style:line-height="0.9"
 			style:letter-spacing="-0.02em"
 			style:color="var(--accent)"
+			style:white-space="nowrap"
+			style:display="flex"
+			style:align-items="baseline"
+			style:justify-content="flex-end"
+			style:gap="8px"
 		>
-			{clockParts.hm}<span
-				style:font-size="56px"
-				style:margin-left="8px"
-				style:color="var(--ink-dim)">{clockParts.ap}</span
-			>
+			{#if isRTL && clockParts.ap}
+				<span style:font-size="38px" style:color="var(--ink-dim)">{clockParts.ap}</span>
+			{/if}
+			<span dir="ltr">{clockParts.hm}</span>
+			{#if !isRTL && clockParts.ap}
+				<span style:font-size="38px" style:color="var(--ink-dim)">{clockParts.ap}</span>
+			{/if}
 		</div>
 	</div>
 {:else}
@@ -74,25 +95,48 @@
 		style:justify-content="flex-end"
 		style:gap="14px"
 	>
-		<div
-			class="display mono"
-			style:font-size="156px"
-			style:font-weight="700"
-			style:line-height="0.9"
-			style:letter-spacing="-0.04em"
-			style:color="var(--accent)"
-			style:font-variant-numeric="tabular-nums"
-		>
-			{arrival.min}
-		</div>
-		<div
-			class="sc display"
-			style:font-size="36px"
-			style:font-weight="700"
-			style:letter-spacing="0.06em"
-			style:color="var(--ink-dim)"
-		>
-			MIN
-		</div>
+		{#if isRTL}
+			<div
+				class="sc display"
+				style:font-size="36px"
+				style:font-weight="700"
+				style:letter-spacing="0.06em"
+				style:color="var(--ink-dim)"
+			>
+				{t.board_min()}
+			</div>
+			<div
+				class="display mono"
+				style:font-size="156px"
+				style:font-weight="700"
+				style:line-height="0.9"
+				style:letter-spacing="-0.04em"
+				style:color="var(--accent)"
+				style:font-variant-numeric="tabular-nums"
+			>
+				{arrival.min}
+			</div>
+		{:else}
+			<div
+				class="display mono"
+				style:font-size="156px"
+				style:font-weight="700"
+				style:line-height="0.9"
+				style:letter-spacing="-0.04em"
+				style:color="var(--accent)"
+				style:font-variant-numeric="tabular-nums"
+			>
+				{arrival.min}
+			</div>
+			<div
+				class="sc display"
+				style:font-size="36px"
+				style:font-weight="700"
+				style:letter-spacing="0.06em"
+				style:color="var(--ink-dim)"
+			>
+				{t.board_min()}
+			</div>
+		{/if}
 	</div>
 {/if}

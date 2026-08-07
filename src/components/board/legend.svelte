@@ -1,15 +1,17 @@
 <script>
-	const items = [
-		{ glyph: '●', label: 'ON TIME' },
-		{ glyph: '▲', label: 'EARLY' },
-		{ glyph: '▼', label: 'DELAYED' },
-		{ glyph: '○', label: 'SCHEDULED' },
-		{ glyph: '✕', label: 'CANCELED' }
-	];
+	import * as t from '$lib/paraglide/messages.js';
+
+	const items = $derived([
+		{ glyph: '●', label: t.board_status_ontime() },
+		{ glyph: '▲', label: t.board_status_early() },
+		{ glyph: '▼', label: t.board_status_delayed() },
+		{ glyph: '○', label: t.board_status_scheduled() },
+		{ glyph: '✕', label: t.board_status_canceled() }
+	]);
 </script>
 
 <div style:display="flex" style:justify-content="center" style:gap="36px">
-	{#each items as item (item.label)}
+	{#each items as item (item.glyph)}
 		<span
 			class="sc tnum"
 			style:display="inline-flex"

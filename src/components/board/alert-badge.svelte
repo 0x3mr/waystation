@@ -1,13 +1,39 @@
 <script>
-	import { formatTimestamp } from '$lib/formatters.js';
+	import * as t from '$lib/paraglide/messages.js';
+	import { getLocale } from '$lib/paraglide/runtime.js';
+	import { formatTimestamp, translate } from '$lib/formatters.js';
 
 	let { situation } = $props();
 
-	const headline = $derived(situation?.summary?.value?.trim?.() ?? '');
+	const rawHeadline = $derived(situation?.summary?.value?.trim?.() ?? '');
 	const activeWindow = $derived(situation?.activeWindows?.[0]);
 	const windowStart = $derived(activeWindow?.from ? formatTimestamp(activeWindow.from) : '');
 	const windowEnd = $derived(activeWindow?.to ? formatTimestamp(activeWindow.to) : '');
 	const severity = $derived(situation?.severity?.toLowerCase?.() ?? 'alert');
+
+	let translatedHeadline = $state('');
+
+	$effect(() => {
+		const locale = getLocale();
+		const raw = rawHeadline;
+		if (!raw) {
+			translatedHeadline = '';
+			return;
+		}
+		if (locale === 'en') {
+			translatedHeadline = raw;
+			return;
+		}
+		translate(raw, locale)
+			.then((text) => {
+				translatedHeadline = text;
+			})
+			.catch(() => {
+				translatedHeadline = raw;
+			});
+	});
+
+	const headline = $derived(translatedHeadline || rawHeadline);
 </script>
 
 <div
@@ -37,7 +63,7 @@
 			style:letter-spacing="0.22em"
 			style:color="var(--ink-mute)"
 		>
-			SERVICE ADVISORY{#if windowStart}
+			{t.board_service_advisory()}{#if windowStart}
 				· {windowStart}{#if windowEnd}
 					→ {windowEnd}{/if}{/if}
 		</div>

@@ -1,4 +1,6 @@
 <script>
+	import * as t from '$lib/paraglide/messages.js';
+
 	let { hasRealtime = false } = $props();
 </script>
 
@@ -22,5 +24,5 @@
 		style:outline-offset="-2px"
 		style:animation={hasRealtime ? 'board-live-pulse 2s ease-in-out infinite' : 'none'}
 	></span>
-	<span>{hasRealtime ? 'LIVE' : 'SCHED'}</span>
+	<span>{hasRealtime ? t.board_live() : t.board_sched()}</span>
 </span>
