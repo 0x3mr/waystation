@@ -1,5 +1,6 @@
 <script>
 	import { getLocale } from '$lib/paraglide/runtime.js';
+	import * as t from '$lib/paraglide/messages.js';
 	import AlertBadge from '$components/board/alert-badge.svelte';
 	import ClockBlock from '$components/board/clock-block.svelte';
 	import DepartureRow from '$components/board/departure-row.svelte';
@@ -93,7 +94,7 @@
 				style:letter-spacing="0.24em"
 				style:color="var(--ink-dim)"
 			>
-				DEPARTURES
+				{t.board_departures()}
 			</div>
 		</div>
 
@@ -116,7 +117,7 @@
 				style:color="var(--ink-mute)"
 				style:margin-bottom="6px"
 			>
-				STOP #{stopId}
+				{t.board_stop_label({ stopId })}
 			</div>
 			<div
 				class="display"
@@ -157,7 +158,9 @@
 				style:font-weight="700"
 			>
 				<span>
-					DATA UNAVAILABLE FOR STOP{failedStopIds.length > 1 ? 'S' : ''}
+					{failedStopIds.length > 1
+						? t.board_data_unavailable_stops()
+						: t.board_data_unavailable_stop()}
 					{failedStopIds.map((id) => '#' + (id.split('_')[1] ?? id)).join(', ')}
 				</span>
 			</div>
@@ -178,10 +181,10 @@
 		style:border-bottom="1px solid var(--rule)"
 		style:padding="14px 8px"
 	>
-		<div>ROUTE</div>
-		<div>DESTINATION</div>
-		<div style:text-align="right">ARRIVES</div>
-		<div style:text-align="right">STATUS</div>
+		<div>{t.board_col_route()}</div>
+		<div>{t.board_col_destination()}</div>
+		<div style:text-align="right">{t.board_col_arrives()}</div>
+		<div style:text-align="right">{t.board_col_status()}</div>
 	</div>
 
 	<!-- ROWS -->
@@ -220,9 +223,9 @@
 				style:letter-spacing="0.18em"
 				style:color="var(--ink-mute)"
 			>
-				<span style:color="var(--ink-dim)" style:font-weight="600">WAYSTATION</span>
+				<span style:color="var(--ink-dim)" style:font-weight="600">{t.board_waystation()}</span>
 				<span style:margin="0 12px" style:color="var(--rule-strong)">/</span>
-				<span>Open Transit Software Foundation</span>
+				<span>{t.board_otsf()}</span>
 			</div>
 
 			<Legend />
@@ -237,15 +240,17 @@
 					style:font-weight={stale ? 700 : 400}
 				>
 					{#if !updatedDate}
-						UPDATING…
+						{t.board_updating()}
 					{:else if stale}
-						STALE · LAST {updatedDate.toLocaleTimeString(getLocale(), {
+						{t.board_stale_prefix()}
+						{updatedDate.toLocaleTimeString(getLocale(), {
 							hour: 'numeric',
 							minute: '2-digit',
 							second: '2-digit'
 						})}
 					{:else}
-						UPDATED {updatedDate.toLocaleTimeString(getLocale(), {
+						{t.board_updated()}
+						{updatedDate.toLocaleTimeString(getLocale(), {
 							hour: 'numeric',
 							minute: '2-digit',
 							second: '2-digit'

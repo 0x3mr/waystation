@@ -18,7 +18,7 @@ export function formatSeconds(seconds) {
  * @param {Date} date
  */
 export function formatDateTime(date) {
-	return date.toLocaleTimeString('en-US', {
+	return date.toLocaleTimeString(getLocale(), {
 		hour: 'numeric',
 		minute: '2-digit',
 		second: '2-digit',
@@ -232,7 +232,7 @@ export function formatTextColor(defaultStatus, routeStatus) {
  */
 export function formatTime(time) {
 	const date = new Date(time);
-	return date.toLocaleTimeString('en-US', {
+	return date.toLocaleTimeString(getLocale(), {
 		hour: 'numeric',
 		minute: '2-digit',
 		hour12: true
@@ -256,7 +256,7 @@ export function formatDate(date) {
  * @param {Date} date
  */
 export function formatCurrentTime(date) {
-	return date.toLocaleTimeString('en-US', {
+	return date.toLocaleTimeString(getLocale(), {
 		hour: '2-digit',
 		minute: '2-digit',
 		second: '2-digit',
