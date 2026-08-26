@@ -2,5 +2,6 @@
 	"maxDepartures": 4,
 	"updateInterval": 30,
 	"theme": "system",
-	"colorMode": "color"
+	"colorMode": "color",
+	"branding": {}
 }

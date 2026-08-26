@@ -15,7 +15,13 @@ describe('normalizeConfig', () => {
 
 	it('keeps valid values', () => {
 		const cfg = { maxDepartures: 6, updateInterval: 15, theme: 'light', colorMode: 'mono' };
-		expect(normalizeConfig(cfg)).toEqual(cfg);
+		expect(normalizeConfig(cfg)).toEqual({ ...cfg, branding: DEFAULT_CONFIG.branding });
+	});
+
+	it('normalizes branding without throwing on bad values', () => {
+		const out = normalizeConfig({ branding: { boardBg: '#101010', brandRed: 'red' } });
+		expect(out.branding.boardBg).toBe('#101010');
+		expect(out.branding.brandRed).toBe('');
 	});
 
 	it('falls back on invalid theme, colorMode, and numbers', () => {

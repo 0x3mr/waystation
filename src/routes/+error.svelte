@@ -1,9 +1,10 @@
 <script>
-	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
+	import { page } from '$app/state';
+	import { DEFAULT_LOGO_URL, DEFAULT_REGION_NAME } from '$lib/config/branding.js';
 
-	let icon =
-		PUBLIC_OBA_LOGO_URL ?? 'https://opentransitsoftwarefoundation.org/images/logos/onebusaway.svg';
-	let name = PUBLIC_OBA_REGION_NAME ?? 'Waystation';
+	// Layout data is present unless the root layout load itself failed.
+	const icon = $derived(page.data?.logoUrl || DEFAULT_LOGO_URL);
+	const name = $derived(page.data?.regionName || DEFAULT_REGION_NAME);
 </script>
 
 <div

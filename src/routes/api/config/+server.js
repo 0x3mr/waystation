@@ -1,5 +1,6 @@
 import { json } from '@sveltejs/kit';
 import { saveConfig, getConfig } from '$lib/config/config.js';
+import { asObject, validateBranding } from '$lib/config/branding.js';
 
 /** @type {import('./$types').RequestHandler} */
 export async function GET() {
@@ -8,7 +9,21 @@ export async function GET() {
 
 /** @type {import('./$types').RequestHandler} */
 export async function POST({ request }) {
-	const res = await request.json();
-	saveConfig(res);
+	let body;
+	try {
+		body = await request.json();
+	} catch {
+		return json({ error: 'Request body must be JSON' }, { status: 400 });
+	}
+
+	// A non-object body would normalize to `{}` and silently reset every setting.
+	if (asObject(body) !== body) {
+		return json({ error: 'Request body must be a JSON object' }, { status: 400 });
+	}
+
+	const errors = validateBranding(body.branding);
+	if (errors.length) return json({ error: errors.join('; ') }, { status: 400 });
+
+	saveConfig(body);
 	return json({ success: true });
 }
