@@ -1,34 +1,30 @@
 <script>
-	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
 	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { formatSeconds } from '$lib/formatters';
 	import { COLOR_MODES, THEMES, normalizeConfig } from '$lib/config/defaults.js';
 	import { setLocale } from '$lib/paraglide/runtime';
-	import { SITE_TOKENS, BOARD_TOKENS, isValidLogoUrl } from '$lib/config/branding.js';
+	import { SITE_TOKENS, BOARD_TOKENS, validateBranding } from '$lib/config/branding.js';
 	import { Power, Plus, Minus } from '@lucide/svelte';
 
 	import Header from '$components/navigation/header.svelte';
 
 	let { data } = $props();
 
-	let localConfig = $state(normalizeConfig());
+	let localConfig = $state(normalizeConfig(data.config));
 
 	let runningTime = $state(0);
 	let selector = $state('en');
-	let logoUrlError = $state('');
+	let saveErrors = $state([]);
 
-	const logoUrl = $derived(localConfig.branding.logoUrl || PUBLIC_OBA_LOGO_URL);
-	const regionName = $derived(localConfig.branding.regionName || PUBLIC_OBA_REGION_NAME);
-
-	function validateLogoUrl(url) {
-		if (!url || isValidLogoUrl(url)) return '';
-		return 'Must be an http or https URL (e.g. https://example.com/logo.png)';
-	}
+	// Live preview of the unsaved branding; `data` carries the env-var fallbacks from the layout.
+	const logoUrl = $derived(localConfig.branding.logoUrl || data.logoUrl);
+	const regionName = $derived(localConfig.branding.regionName || data.regionName);
 
 	async function saveChanges() {
-		logoUrlError = validateLogoUrl(localConfig.branding.logoUrl);
-		if (logoUrlError) return;
+		// Same rules the server applies, so the messages match by construction.
+		saveErrors = validateBranding(localConfig.branding);
+		if (saveErrors.length) return;
 
 		setLocale(selector);
 
@@ -54,7 +50,6 @@
 	async function resetChanges() {
 		selector = 'en';
 		localConfig = normalizeConfig();
-		logoUrlError = '';
 		await saveChanges();
 	}
 
@@ -77,14 +72,7 @@
 	const THEME_LABELS = { system: 'Follow system', light: 'Light', dark: 'Dark' };
 	const COLOR_MODE_LABELS = { color: 'Color', mono: 'Monochromatic' };
 
-	onMount(async () => {
-		try {
-			const req = await fetch('/api/config');
-			if (req.ok) localConfig = normalizeConfig(await req.json());
-		} catch (error) {
-			console.error('[waystation] Failed to load config:', error);
-		}
-
+	onMount(() => {
 		upTime();
 		setInterval(upTime, 1000);
 	});
@@ -129,8 +117,7 @@
 			</div>
 		{/snippet}
 
-		{#snippet colorPicker(key, tokens)}
-			{@const token = tokens[key]}
+		{#snippet colorPicker(key, token)}
 			<div class="flex flex-col gap-y-2 rounded-xl border-4 border-gray-300 p-3">
 				<label for="color-{key}" class="text-sm font-medium">{token.label}</label>
 				<div class="flex items-center gap-x-3">
@@ -196,8 +183,8 @@
 				status colors to the text color.
 			</p>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-				{#each Object.keys(BOARD_TOKENS) as key (key)}
-					{@render colorPicker(key, BOARD_TOKENS)}
+				{#each Object.entries(BOARD_TOKENS) as [key, token] (key)}
+					{@render colorPicker(key, token)}
 				{/each}
 			</div>
 		</div>
@@ -212,7 +199,7 @@
 						id="region-name"
 						type="text"
 						bind:value={localConfig.branding.regionName}
-						placeholder={PUBLIC_OBA_REGION_NAME}
+						placeholder={data.regionName}
 						class="rounded border border-gray-300 px-3 py-2 text-base"
 					/>
 				</div>
@@ -222,21 +209,25 @@
 						id="logo-url"
 						type="url"
 						bind:value={localConfig.branding.logoUrl}
-						placeholder={PUBLIC_OBA_LOGO_URL}
+						placeholder={data.logoUrl}
 						class="rounded border border-gray-300 px-3 py-2 text-base"
-						class:border-red-400={logoUrlError}
 					/>
-					{#if logoUrlError}
-						<span class="text-sm text-red-500">{logoUrlError}</span>
-					{/if}
 				</div>
 			</div>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-				{#each Object.keys(SITE_TOKENS) as key (key)}
-					{@render colorPicker(key, SITE_TOKENS)}
+				{#each Object.entries(SITE_TOKENS) as [key, token] (key)}
+					{@render colorPicker(key, token)}
 				{/each}
 			</div>
 		</div>
+
+		{#if saveErrors.length}
+			<ul class="w-full max-w-7xl rounded-3xl bg-white px-6 py-3 text-sm text-red-500" role="alert">
+				{#each saveErrors as error (error)}
+					<li>{error}</li>
+				{/each}
+			</ul>
+		{/if}
 
 		<div
 			class="flex w-full max-w-7xl justify-around gap-x-10 rounded-3xl bg-white px-6 py-3 text-xl"

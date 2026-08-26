@@ -89,8 +89,10 @@ describe('buildBrandingCss', () => {
 		const css = buildBrandingCss({ boardAccent: '#123456' });
 		expect(css).not.toMatch(/theme-/);
 	});
+});
 
-	it('token maps only contain hex defaults', () => {
+describe('token maps', () => {
+	it('only contain hex defaults', () => {
 		for (const { defaultHex } of [...Object.values(SITE_TOKENS), ...Object.values(BOARD_TOKENS)]) {
 			expect(defaultHex).toMatch(/^#[0-9a-f]{6}$/);
 		}

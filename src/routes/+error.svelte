@@ -1,14 +1,11 @@
 <script>
-	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
 	import { page } from '$app/state';
 
 	// Layout data is present unless the root layout load itself failed.
 	const icon = $derived(
-		page.data?.logoUrl ||
-			PUBLIC_OBA_LOGO_URL ||
-			'https://opentransitsoftwarefoundation.org/images/logos/onebusaway.svg'
+		page.data?.logoUrl || 'https://opentransitsoftwarefoundation.org/images/logos/onebusaway.svg'
 	);
-	const name = $derived(page.data?.regionName || PUBLIC_OBA_REGION_NAME || 'Waystation');
+	const name = $derived(page.data?.regionName || 'Waystation');
 </script>
 
 <div

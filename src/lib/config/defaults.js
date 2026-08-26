@@ -1,4 +1,4 @@
-import { BRANDING_DEFAULTS, normalizeBranding } from './branding.js';
+import { BRANDING_DEFAULTS, asObject, normalizeBranding } from './branding.js';
 
 export const THEMES = ['system', 'light', 'dark'];
 export const COLOR_MODES = ['color', 'mono'];
@@ -18,7 +18,7 @@ function positiveInt(value, fallback) {
 
 /** Coerce a possibly hand-edited or malformed config into a fully valid one. Never throws. */
 export function normalizeConfig(raw) {
-	const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+	const source = asObject(raw);
 	return {
 		...source,
 		maxDepartures: positiveInt(source.maxDepartures, DEFAULT_CONFIG.maxDepartures),

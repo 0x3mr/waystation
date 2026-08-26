@@ -60,7 +60,8 @@ function brandingError(key, value) {
 	return '';
 }
 
-function asObject(raw) {
+/** Coerce anything that isn't a plain object into `{}`. */
+export function asObject(raw) {
 	return raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
 }
 
@@ -89,16 +90,15 @@ export function normalizeBranding(raw) {
 	return branding;
 }
 
-/** CSS variable that app.css reads for a board token's branded override. */
-export function brandVar(cssVar) {
-	return cssVar.replace(/^--/, '--brand-');
-}
-
 /** Build a stylesheet that overrides the site colors and supplies board-token overrides. */
 export function buildBrandingCss(branding) {
 	const declarations = [
 		...Object.entries(SITE_TOKENS).map(([key, { cssVar }]) => [cssVar, branding[key]]),
-		...Object.entries(BOARD_TOKENS).map(([key, { cssVar }]) => [brandVar(cssVar), branding[key]])
+		// app.css reads each board token's override as `--brand-<name>`.
+		...Object.entries(BOARD_TOKENS).map(([key, { cssVar }]) => [
+			cssVar.replace(/^--/, '--brand-'),
+			branding[key]
+		])
 	]
 		.filter(([, value]) => value)
 		.map(([name, value]) => `${name}:${value}`)

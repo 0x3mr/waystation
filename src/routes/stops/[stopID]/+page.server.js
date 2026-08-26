@@ -1,9 +1,7 @@
-import { getConfig } from '$lib/config/config.js';
-
 // The multi-stop grid is designed for up to six cards (see multi-stop-board.svelte).
 const MAX_STOPS = 6;
 
-export async function load({ params }) {
+export async function load({ params, parent }) {
 	// Dedupe and drop empty segments so keyed cards never collide and no fetch targets ''.
 	const stopIDs = [
 		...new Set(
@@ -14,8 +12,6 @@ export async function load({ params }) {
 		)
 	].slice(0, MAX_STOPS);
 
-	return {
-		stopIDs,
-		config: getConfig()
-	};
+	const { config } = await parent();
+	return { stopIDs, config };
 }
