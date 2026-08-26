@@ -31,3 +31,5 @@ coverage
 # Workspace
 .vscode/extensions.json
 settings.local.json
+# Playwright MCP session artifacts
+.playwright-mcp/

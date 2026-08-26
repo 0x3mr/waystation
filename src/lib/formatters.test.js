@@ -1,5 +1,3 @@
-// @vitest-environment jsdom
-
 import { describe, test, expect, afterEach } from 'vitest';
 import { cleanup } from '@testing-library/svelte';
 import {
@@ -249,7 +247,7 @@ describe('formatters', () => {
 
 		test('falls back to "Stop #<code>" for the name when references are absent', () => {
 			const result = parseStopDepartures(null, 'MTS_75057');
-			expect(result.stopName).toBe('Stop #75057');
+			expect(result.stopName).toBe('STOP #75057');
 		});
 
 		test('resolves the stop name and attaches it to each departure', () => {
@@ -376,5 +374,35 @@ describe('formatters', () => {
 			expect(result).not.toBe(p);
 			expect(result.stopName).toBe('Main St & 5th Ave');
 		});
+	});
+});
+
+describe('parseStopDepartures stop metadata', () => {
+	test('exposes stop code and direction from the stop reference', () => {
+		const json = {
+			data: {
+				entry: { arrivalsAndDepartures: [] },
+				references: { stops: [{ id: '1_74439', code: '74439', direction: 'N', name: 'X' }] }
+			}
+		};
+		const r = parseStopDepartures(json, '1_74439');
+		expect(r.stopCode).toBe('74439');
+		expect(r.direction).toBe('N');
+	});
+
+	test('falls back to the numeric id and empty direction when no stop reference exists', () => {
+		const r = parseStopDepartures(null, 'MTS_75057');
+		expect(r.stopCode).toBe('75057');
+		expect(r.direction).toBe('');
+	});
+
+	test('falls back to the numeric id when the stop reference has an empty code', () => {
+		const json = {
+			data: {
+				entry: { arrivalsAndDepartures: [] },
+				references: { stops: [{ id: '1_74439', code: '', name: 'X' }] }
+			}
+		};
+		expect(parseStopDepartures(json, '1_74439').stopCode).toBe('74439');
 	});
 });
