@@ -59,5 +59,15 @@
 	"board_empty_error_kicker": "SIGNAL PERDU",
 	"board_empty_error_head": "PAS DE DONNÉES",
 	"board_empty_error_sub": "Données temps réel indisponibles — vérifier le réseau",
-	"board_empty_error_chip": "NOUVELLE TENTATIVE"
+	"board_empty_error_chip": "NOUVELLE TENTATIVE",
+	"board_no_departures": "AUCUN DÉPART À VENIR",
+	"board_data_unavailable": "DONNÉES INDISPONIBLES",
+	"board_dir_N": "Direction nord",
+	"board_dir_S": "Direction sud",
+	"board_dir_E": "Direction est",
+	"board_dir_W": "Direction ouest",
+	"board_dir_NE": "Direction nord-est",
+	"board_dir_NW": "Direction nord-ouest",
+	"board_dir_SE": "Direction sud-est",
+	"board_dir_SW": "Direction sud-ouest"
 }

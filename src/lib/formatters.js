@@ -412,18 +412,21 @@ export function diffArrivals(prev, next) {
  *
  * @param {Object|null} json - Parsed proxy response (may be null)
  * @param {string} id - Stop ID (e.g. "MTS_75057")
- * @returns {{stopId: string, stopName: string, stale: boolean, departures: Array, situations: Array}}
+ * @returns {{stopId: string, stopCode: string, stopName: string, direction: string, stale: boolean, departures: Array, situations: Array}}
  */
 export function parseStopDepartures(json, id) {
 	const stopsRef = json?.data?.references?.stops;
 	const stopRecord = stopsRef ? Object.values(stopsRef).find((s) => s.id === id) : null;
-	const stopName = stopRecord?.name ?? `Stop #${id.split('_')[1] ?? id}`;
+	const stopCode = stopRecord?.code || id.split('_')[1] || id;
+	const stopName = stopRecord?.name ?? t.board_stop_label({ stopId: stopCode });
 
 	const departures = json?.data?.entry?.arrivalsAndDepartures;
 
 	return {
 		stopId: id,
+		stopCode,
 		stopName,
+		direction: stopRecord?.direction ?? '',
 		stale: json?.stale === true,
 		departures: Array.isArray(departures) ? departures.map((dep) => ({ ...dep, stopName })) : [],
 		situations: json?.data?.references?.situations ?? []
@@ -439,7 +442,22 @@ export function parseStopDepartures(json, id) {
  * @returns {Promise<string>}  - A promise that resolves to the translated string.
  * @throws {Error}             - If the fetch request fails or returns a non-OK status.
  */
-export async function translate(text, targetLang) {
+const translationCache = new Map();
+
+export function translate(text, targetLang) {
+	const key = `${targetLang} ${text}`;
+	let pending = translationCache.get(key);
+	if (!pending) {
+		pending = fetchTranslation(text, targetLang).catch((err) => {
+			translationCache.delete(key);
+			throw err;
+		});
+		translationCache.set(key, pending);
+	}
+	return pending;
+}
+
+async function fetchTranslation(text, targetLang) {
 	const params = new URLSearchParams({
 		client: 'gtx',
 		sl: 'auto',
