@@ -15,7 +15,11 @@
 
 	let { data } = $props();
 
-	const theme = 'dark';
+	// Theme follows the OS/browser color-scheme preference and updates live.
+	// Defaults to dark during SSR; corrected on mount before the board first paints data.
+	let theme = $state('dark');
+	let colorScheme;
+	const applyColorScheme = () => (theme = colorScheme?.matches ? 'light' : 'dark');
 	const ALERT_ROTATE_MS = 8000;
 
 	const isMultiStop = $derived(data.stopIDs.length > 1);
@@ -137,6 +141,10 @@
 	}
 
 	onMount(async () => {
+		colorScheme = window.matchMedia('(prefers-color-scheme: light)');
+		applyColorScheme();
+		colorScheme.addEventListener('change', applyColorScheme);
+
 		try {
 			const res = await fetch('/api/config');
 			if (!res.ok) throw new Error(`/api/config returned ${res.status}`);
@@ -165,6 +173,7 @@
 		cancelled = true;
 		if (browser) {
 			window.removeEventListener('resize', fitStage);
+			colorScheme?.removeEventListener('change', applyColorScheme);
 		}
 		clearInterval(clockTimer);
 		clearInterval(fetchTimer);
