@@ -2,6 +2,7 @@
 	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
 	import { onMount } from 'svelte';
 	import { formatSeconds } from '$lib/formatters';
+	import { COLOR_MODES, DEFAULT_CONFIG, THEMES } from '$lib/config/defaults.js';
 	import { setLocale } from '$lib/paraglide/runtime';
 	import { Power, Plus, Minus } from '@lucide/svelte';
 
@@ -9,10 +10,7 @@
 
 	let { data } = $props();
 
-	let localConfig = $state({
-		maxDepartures: 4,
-		updateInterval: 30
-	});
+	let localConfig = $state({ ...DEFAULT_CONFIG });
 
 	let runningTime = $state(0);
 	let selector = $state('en');
@@ -30,10 +28,7 @@
 	async function resetChanges() {
 		selector = 'en';
 
-		localConfig = {
-			maxDepartures: 4,
-			updateInterval: 30
-		};
+		localConfig = { ...DEFAULT_CONFIG };
 
 		saveChanges();
 	}
@@ -54,10 +49,13 @@
 		runningTime = formatSeconds(runningTime);
 	};
 
+	const THEME_LABELS = { system: 'Follow system', light: 'Light', dark: 'Dark' };
+	const COLOR_MODE_LABELS = { color: 'Color', mono: 'Monochromatic' };
+
 	onMount(async () => {
 		const req = await fetch('/api/config');
 		let config = await req.json();
-		if (config) localConfig = config;
+		if (config) localConfig = { ...DEFAULT_CONFIG, ...config };
 
 		upTime();
 		setInterval(upTime, 1000);
@@ -115,6 +113,21 @@
 			</div>
 			{@render stepper('Departures Display Limit', 'maxDepartures')}
 			{@render stepper('Screen Update Interval (seconds)', 'updateInterval')}
+		</div>
+		{#snippet chooser(label, key, options, labels)}
+			<div class="flex w-full flex-col gap-y-3 rounded-xl border-4 border-gray-300 p-3">
+				<label for="{key}-select">{label}</label>
+				<select id="{key}-select" bind:value={localConfig[key]}>
+					{#each options as option (option)}
+						<option value={option}>{labels[option]}</option>
+					{/each}
+				</select>
+			</div>
+		{/snippet}
+
+		<div class="flex w-full max-w-7xl flex-col gap-3 rounded-3xl bg-white p-5 text-xl md:flex-row">
+			{@render chooser('Board Theme', 'theme', THEMES, THEME_LABELS)}
+			{@render chooser('Board Colors', 'colorMode', COLOR_MODES, COLOR_MODE_LABELS)}
 		</div>
 		<div
 			class="flex w-full max-w-7xl justify-around gap-x-10 rounded-3xl bg-white px-6 py-3 text-xl"

@@ -15,11 +15,14 @@
 
 	let { data } = $props();
 
-	// Theme follows the OS/browser color-scheme preference and updates live.
-	// Defaults to dark during SSR; corrected on mount before the board first paints data.
-	let theme = $state('dark');
+	// Theme comes from admin config (server-loaded, so it's right on first paint): 'light',
+	// 'dark', or 'system'. System follows the OS/browser color-scheme preference and updates
+	// live; it defaults to dark during SSR and is corrected on mount.
+	let systemTheme = $state('dark');
 	let colorScheme;
-	const applyColorScheme = () => (theme = colorScheme?.matches ? 'light' : 'dark');
+	const applyColorScheme = () => (systemTheme = colorScheme?.matches ? 'light' : 'dark');
+	const theme = $derived(data.config.theme === 'system' ? systemTheme : data.config.theme);
+	const colorMode = $derived(data.config.colorMode);
 	const ALERT_ROTATE_MS = 8000;
 
 	const isMultiStop = $derived(data.stopIDs.length > 1);
@@ -45,8 +48,8 @@
 	let alertTimer;
 	let cancelled = false;
 	let fetchInFlight = false;
-	let refreshIntervalMs = 30_000;
-	let maxDepartures = $state(5);
+	const refreshIntervalMs = $derived(data.config.updateInterval * 1000);
+	const maxDepartures = $derived(data.config.maxDepartures);
 
 	async function fetchStop(id) {
 		const response = await fetch(`/api/oba/arrivals-and-departures-for-stop/${id}`);
@@ -145,17 +148,6 @@
 		applyColorScheme();
 		colorScheme.addEventListener('change', applyColorScheme);
 
-		try {
-			const res = await fetch('/api/config');
-			if (!res.ok) throw new Error(`/api/config returned ${res.status}`);
-			const config = await res.json();
-			refreshIntervalMs = (Number(config.updateInterval) || 30) * 1000;
-			const parsedMax = Math.floor(Number(config.maxDepartures));
-			maxDepartures = Number.isFinite(parsedMax) && parsedMax > 0 ? parsedMax : 5;
-		} catch (err) {
-			console.error('Config fetch failed; using defaults (30s refresh, 5 departures):', err);
-		}
-
 		await fetchAll().catch((err) => console.error('Initial fetchAll failed:', err));
 
 		if (cancelled) return;
@@ -182,7 +174,7 @@
 </script>
 
 <div class="board-stage-wrap">
-	<div id="board-stage" class="board-stage theme-departure theme-{theme}">
+	<div id="board-stage" class="board-stage theme-departure theme-{theme} theme-{colorMode}">
 		{#if isMultiStop}
 			<MultiStopBoard
 				agencyName={PUBLIC_OBA_REGION_NAME}

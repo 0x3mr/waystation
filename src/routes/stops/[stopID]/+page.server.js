@@ -1,3 +1,5 @@
+import { getConfig } from '$lib/config/config.js';
+
 // The multi-stop grid is designed for up to six cards (see multi-stop-board.svelte).
 const MAX_STOPS = 6;
 
@@ -13,6 +15,7 @@ export async function load({ params }) {
 	].slice(0, MAX_STOPS);
 
 	return {
-		stopIDs
+		stopIDs,
+		config: getConfig()
 	};
 }

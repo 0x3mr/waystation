@@ -76,7 +76,7 @@ body::before {
 	--accent-dim: #8a7530;
 	--badge-bg-1: #1a1d24;
 	--badge-bg-2: #14171c;
-	--badge-edge: #3d4453;
+	--badge-edge: var(--rule-strong);
 	--badge-ink: #d4b14a;
 	--ontime: #7bdc8a;
 	--early: #ffb14a;
@@ -85,7 +85,7 @@ body::before {
 	--sched: #9bb6d9;
 }
 
-/* THEME — LIGHT (paper timetable; reads on e-ink) */
+/* THEME — LIGHT (paper timetable with ink accents) */
 .theme-departure.theme-light {
 	--bg: #f5f3ee;
 	--bg-elev: #ffffff;
@@ -94,12 +94,24 @@ body::before {
 	--ink: #0a0a0a;
 	--ink-dim: #3a3a3a;
 	--ink-mute: #6a6a6a;
-	--accent: #0a0a0a;
-	--accent-dim: #3a3a3a;
-	--badge-bg-1: #ffffff;
-	--badge-bg-2: #ebe9e3;
+	--accent: #8a6a14;
+	--accent-dim: #b39a4a;
+	--badge-bg-1: #1a1d24;
+	--badge-bg-2: #14171c;
 	--badge-edge: #0a0a0a;
-	--badge-ink: #0a0a0a;
+	--badge-ink: #d4b14a;
+	--ontime: #1f7a3a;
+	--early: #a35f08;
+	--late: #b8402a;
+	--cancel: #b8402a;
+	--sched: #2f5c99;
+}
+
+/* MONOCHROME — collapses every accent and status tone to ink (reads on e-ink) */
+.theme-departure.theme-mono {
+	--accent: var(--ink);
+	--accent-dim: var(--ink-dim);
+	--badge-ink: var(--ink);
 	--ontime: var(--ink);
 	--early: var(--ink);
 	--late: var(--ink);
@@ -143,59 +155,59 @@ body::before {
 .theme-departure .alert-badge .alert-glyph {
 	color: var(--accent);
 }
-.theme-dark .alert-advisory {
-	border-left: 6px solid #d4b14a;
-	background: rgba(212, 177, 74, 0.08);
+.theme-departure .alert-advisory {
+	--alert-tone: var(--accent);
 }
-.theme-dark .alert-advisory .alert-glyph {
-	color: #d4b14a;
+.theme-departure .alert-info {
+	--alert-tone: var(--sched);
 }
-.theme-dark .alert-info {
-	border-left: 6px solid #9bb6d9;
-	background: rgba(155, 182, 217, 0.08);
+.theme-departure .alert-alert {
+	--alert-tone: var(--late);
 }
-.theme-dark .alert-info .alert-glyph {
-	color: #9bb6d9;
+.theme-departure .alert-advisory,
+.theme-departure .alert-info,
+.theme-departure .alert-alert {
+	border-left: 6px solid var(--alert-tone);
+	background: color-mix(in srgb, var(--alert-tone) 8%, transparent);
 }
-.theme-dark .alert-alert {
-	border-left: 6px solid #ff8b6a;
-	background: rgba(255, 139, 106, 0.08);
+.theme-departure .alert-advisory .alert-glyph,
+.theme-departure .alert-info .alert-glyph,
+.theme-departure .alert-alert .alert-glyph {
+	color: var(--alert-tone);
 }
-.theme-dark .alert-alert .alert-glyph {
-	color: #ff8b6a;
-}
-.theme-light .alert-advisory,
-.theme-light .alert-info {
-	border-left: 6px solid #0a0a0a;
-	background: #ffffff;
-}
-.theme-light .alert-alert {
-	border-left: 6px solid #0a0a0a;
-	background: #ffffff;
+/* Mono has no tones, so alerts flatten to ink; the "alert" level gets a heavier frame instead. */
+.theme-mono .alert-alert {
 	box-shadow:
-		inset 4px 0 0 #0a0a0a,
-		0 0 0 1px #0a0a0a;
-}
-.theme-light .alert-badge .alert-glyph {
-	color: #0a0a0a;
+		inset 4px 0 0 var(--ink),
+		0 0 0 1px var(--ink);
 }
 
+.theme-departure .route-badge {
+	background: linear-gradient(
+		180deg,
+		var(--badge-bg-1) 0%,
+		var(--badge-bg-1) 49%,
+		var(--badge-bg-2) 51%,
+		var(--badge-bg-2) 100%
+	);
+	border: 1px solid var(--badge-edge);
+}
 .theme-dark .route-badge {
-	background: linear-gradient(180deg, #1a1d24 0%, #1a1d24 49%, #14171c 51%, #14171c 100%);
-	border: 1px solid var(--rule-strong);
 	box-shadow:
 		inset 0 1px 0 rgba(255, 255, 255, 0.04),
 		inset 0 -1px 0 rgba(0, 0, 0, 0.4),
 		0 2px 0 rgba(0, 0, 0, 0.5);
-	--badge-ink: #d4b14a;
 	--badge-meta: rgba(244, 236, 216, 0.4);
 }
 .theme-light .route-badge {
-	background: #0a0a0a;
-	border: 1px solid #0a0a0a;
-	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.06);
-	--badge-ink: #f5f3ee;
+	box-shadow: 0 2px 0 rgba(0, 0, 0, 0.12);
 	--badge-meta: rgba(245, 243, 238, 0.55);
+}
+/* Mono light flips the badge to solid ink with paper-colored text */
+.theme-mono.theme-light {
+	--badge-bg-1: var(--ink);
+	--badge-bg-2: var(--ink);
+	--badge-ink: var(--bg);
 }
 
 @keyframes board-live-pulse {
