@@ -63,48 +63,52 @@ body::before {
 	font-feature-settings: 'ss01';
 }
 
+/* Each token reads an optional --brand-* override (emitted from admin branding, see
+   src/lib/config/branding.js) and falls back to the theme default. Overrides therefore apply to
+   both themes, while .theme-mono below still collapses tones to ink. */
+
 /* THEME — DARK (Solari split-flap glow) */
 .theme-departure.theme-dark {
-	--bg: #0e1014;
-	--bg-elev: #15181f;
-	--rule: #2a2f3a;
-	--rule-strong: #3d4453;
-	--ink: #f4ecd8;
-	--ink-dim: #9b9685;
-	--ink-mute: #5e5a4f;
-	--accent: #d4b14a;
+	--bg: var(--brand-bg, #0e1014);
+	--bg-elev: var(--brand-bg-elev, #15181f);
+	--rule: var(--brand-rule, #2a2f3a);
+	--rule-strong: var(--brand-rule-strong, #3d4453);
+	--ink: var(--brand-ink, #f4ecd8);
+	--ink-dim: var(--brand-ink-dim, #9b9685);
+	--ink-mute: var(--brand-ink-mute, #5e5a4f);
+	--accent: var(--brand-accent, #d4b14a);
 	--accent-dim: #8a7530;
-	--badge-bg-1: #1a1d24;
-	--badge-bg-2: #14171c;
-	--badge-edge: var(--rule-strong);
-	--badge-ink: #d4b14a;
-	--ontime: #7bdc8a;
-	--early: #ffb14a;
-	--late: #ff8b6a;
-	--cancel: #ff8b6a;
-	--sched: #9bb6d9;
+	--badge-bg-1: var(--brand-badge-bg-1, #1a1d24);
+	--badge-bg-2: var(--brand-badge-bg-1, #14171c);
+	--badge-edge: var(--brand-badge-edge, var(--rule-strong));
+	--badge-ink: var(--brand-badge-ink, #d4b14a);
+	--ontime: var(--brand-ontime, #7bdc8a);
+	--early: var(--brand-early, #ffb14a);
+	--late: var(--brand-late, #ff8b6a);
+	--cancel: var(--brand-late, #ff8b6a);
+	--sched: var(--brand-sched, #9bb6d9);
 }
 
 /* THEME — LIGHT (paper timetable with ink accents) */
 .theme-departure.theme-light {
-	--bg: #f5f3ee;
-	--bg-elev: #ffffff;
-	--rule: #c7c4bd;
-	--rule-strong: #1a1a1a;
-	--ink: #0a0a0a;
-	--ink-dim: #3a3a3a;
-	--ink-mute: #6a6a6a;
-	--accent: #8a6a14;
+	--bg: var(--brand-bg, #f5f3ee);
+	--bg-elev: var(--brand-bg-elev, #ffffff);
+	--rule: var(--brand-rule, #c7c4bd);
+	--rule-strong: var(--brand-rule-strong, #1a1a1a);
+	--ink: var(--brand-ink, #0a0a0a);
+	--ink-dim: var(--brand-ink-dim, #3a3a3a);
+	--ink-mute: var(--brand-ink-mute, #6a6a6a);
+	--accent: var(--brand-accent, #8a6a14);
 	--accent-dim: #b39a4a;
-	--badge-bg-1: #1a1d24;
-	--badge-bg-2: #14171c;
-	--badge-edge: #0a0a0a;
-	--badge-ink: #d4b14a;
-	--ontime: #1f7a3a;
-	--early: #a35f08;
-	--late: #b8402a;
-	--cancel: #b8402a;
-	--sched: #2f5c99;
+	--badge-bg-1: var(--brand-badge-bg-1, #1a1d24);
+	--badge-bg-2: var(--brand-badge-bg-1, #14171c);
+	--badge-edge: var(--brand-badge-edge, #0a0a0a);
+	--badge-ink: var(--brand-badge-ink, #d4b14a);
+	--ontime: var(--brand-ontime, #1f7a3a);
+	--early: var(--brand-early, #a35f08);
+	--late: var(--brand-late, #b8402a);
+	--cancel: var(--brand-late, #b8402a);
+	--sched: var(--brand-sched, #2f5c99);
 }
 
 /* MONOCHROME — collapses every accent and status tone to ink (reads on e-ink) */

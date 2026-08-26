@@ -1,5 +1,4 @@
 <script>
-	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
 	import { browser } from '$app/environment';
 	import { onDestroy, onMount } from 'svelte';
 
@@ -177,8 +176,8 @@
 	<div id="board-stage" class="board-stage theme-departure theme-{theme} theme-{colorMode}">
 		{#if isMultiStop}
 			<MultiStopBoard
-				agencyName={PUBLIC_OBA_REGION_NAME}
-				agencyLogo={PUBLIC_OBA_LOGO_URL}
+				agencyName={data.regionName}
+				agencyLogo={data.logoUrl}
 				{stops}
 				alert={activeAlert}
 				{now}
@@ -188,8 +187,8 @@
 			/>
 		{:else}
 			<Board
-				agencyName={PUBLIC_OBA_REGION_NAME}
-				agencyLogo={PUBLIC_OBA_LOGO_URL}
+				agencyName={data.regionName}
+				agencyLogo={data.logoUrl}
 				stopId={primary?.code ?? ''}
 				stopName={primary?.name ?? ''}
 				arrivals={primary?.arrivals ?? []}

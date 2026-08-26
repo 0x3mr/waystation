@@ -1,24 +1,18 @@
 <script>
 	import { PUBLIC_OBA_LOGO_URL, PUBLIC_OBA_REGION_NAME } from '$env/static/public';
+	import { invalidateAll } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { formatSeconds } from '$lib/formatters';
-	import { COLOR_MODES, DEFAULT_CONFIG, THEMES } from '$lib/config/defaults.js';
+	import { COLOR_MODES, THEMES, normalizeConfig } from '$lib/config/defaults.js';
 	import { setLocale } from '$lib/paraglide/runtime';
-	import {
-		SITE_TOKENS,
-		BOARD_TOKENS,
-		BRANDING_DEFAULTS,
-		buildBrandingCss
-	} from '$lib/config/branding.js';
+	import { SITE_TOKENS, BOARD_TOKENS, isValidLogoUrl } from '$lib/config/branding.js';
 	import { Power, Plus, Minus } from '@lucide/svelte';
 
 	import Header from '$components/navigation/header.svelte';
 
 	let { data } = $props();
 
-	const defaultConfig = () => ({ ...DEFAULT_CONFIG, branding: { ...BRANDING_DEFAULTS } });
-
-	let localConfig = $state(defaultConfig());
+	let localConfig = $state(normalizeConfig());
 
 	let runningTime = $state(0);
 	let selector = $state('en');
@@ -28,16 +22,8 @@
 	const regionName = $derived(localConfig.branding.regionName || PUBLIC_OBA_REGION_NAME);
 
 	function validateLogoUrl(url) {
-		if (!url) return '';
-		try {
-			const parsed = new URL(url);
-			if (!['http:', 'https:'].includes(parsed.protocol)) {
-				return 'URL must use http or https';
-			}
-			return '';
-		} catch {
-			return 'Must be a valid URL (e.g. https://example.com/logo.png)';
-		}
+		if (!url || isValidLogoUrl(url)) return '';
+		return 'Must be an http or https URL (e.g. https://example.com/logo.png)';
 	}
 
 	async function saveChanges() {
@@ -52,29 +38,22 @@
 				headers: { 'Content-Type': 'application/json' },
 				body: JSON.stringify(localConfig)
 			});
-
 			if (!res.ok) {
-				alert('Failed to save configuration. Please try again.');
-				return;
+				const body = await res.json().catch(() => ({}));
+				throw new Error(body.error || res.statusText || `HTTP ${res.status}`);
 			}
 		} catch (error) {
-			alert('Failed to save configuration: ' + error);
+			alert(`Failed to save configuration: ${error.message}`);
 			return;
 		}
 
-		const css = buildBrandingCss(localConfig.branding);
-		let styleEl = document.getElementById('waystation-branding');
-		if (!styleEl) {
-			styleEl = document.createElement('style');
-			styleEl.id = 'waystation-branding';
-			document.head.appendChild(styleEl);
-		}
-		styleEl.textContent = css;
+		// Re-run the root layout load so the title, favicon, and branding stylesheet reflect the save.
+		await invalidateAll();
 	}
 
 	async function resetChanges() {
 		selector = 'en';
-		localConfig = defaultConfig();
+		localConfig = normalizeConfig();
 		logoUrlError = '';
 		await saveChanges();
 	}
@@ -99,14 +78,11 @@
 	const COLOR_MODE_LABELS = { color: 'Color', mono: 'Monochromatic' };
 
 	onMount(async () => {
-		const req = await fetch('/api/config');
-		const config = await req.json();
-		if (config) {
-			localConfig = {
-				...DEFAULT_CONFIG,
-				...config,
-				branding: { ...BRANDING_DEFAULTS, ...(config.branding ?? {}) }
-			};
+		try {
+			const req = await fetch('/api/config');
+			if (req.ok) localConfig = normalizeConfig(await req.json());
+		} catch (error) {
+			console.error('[waystation] Failed to load config:', error);
 		}
 
 		upTime();
@@ -215,22 +191,14 @@
 		<!-- Board Branding -->
 		<div class="flex w-full max-w-7xl flex-col gap-3 rounded-3xl bg-white p-5 text-xl">
 			<h2 class="text-lg font-bold text-gray-700">Board Branding</h2>
+			<p class="text-sm text-gray-500">
+				Overrides apply to both the light and dark board themes. Monochromatic mode still collapses
+				status colors to the text color.
+			</p>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3 lg:grid-cols-4">
-				{@render colorPicker('boardBg', BOARD_TOKENS)}
-				{@render colorPicker('boardBgElevated', BOARD_TOKENS)}
-				{@render colorPicker('boardInk', BOARD_TOKENS)}
-				{@render colorPicker('boardInkDim', BOARD_TOKENS)}
-				{@render colorPicker('boardInkMute', BOARD_TOKENS)}
-				{@render colorPicker('boardRule', BOARD_TOKENS)}
-				{@render colorPicker('boardRuleStrong', BOARD_TOKENS)}
-				{@render colorPicker('boardAccent', BOARD_TOKENS)}
-				{@render colorPicker('boardBadgeBg', BOARD_TOKENS)}
-				{@render colorPicker('boardBadgeEdge', BOARD_TOKENS)}
-				{@render colorPicker('boardBadgeInk', BOARD_TOKENS)}
-				{@render colorPicker('boardOntime', BOARD_TOKENS)}
-				{@render colorPicker('boardEarly', BOARD_TOKENS)}
-				{@render colorPicker('boardLate', BOARD_TOKENS)}
-				{@render colorPicker('boardSched', BOARD_TOKENS)}
+				{#each Object.keys(BOARD_TOKENS) as key (key)}
+					{@render colorPicker(key, BOARD_TOKENS)}
+				{/each}
 			</div>
 		</div>
 
@@ -264,12 +232,9 @@
 				</div>
 			</div>
 			<div class="grid grid-cols-2 gap-3 sm:grid-cols-3">
-				{@render colorPicker('brandRed', SITE_TOKENS)}
-				{@render colorPicker('brandBlue', SITE_TOKENS)}
-				{@render colorPicker('brandDarkblue', SITE_TOKENS)}
-				{@render colorPicker('brandDarkerblue', SITE_TOKENS)}
-				{@render colorPicker('brandGray', SITE_TOKENS)}
-				{@render colorPicker('obaGreen', SITE_TOKENS)}
+				{#each Object.keys(SITE_TOKENS) as key (key)}
+					{@render colorPicker(key, SITE_TOKENS)}
+				{/each}
 			</div>
 		</div>
 
