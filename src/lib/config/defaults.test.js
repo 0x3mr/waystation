@@ -7,6 +7,12 @@ describe('normalizeConfig', () => {
 		expect(normalizeConfig({})).toEqual(DEFAULT_CONFIG);
 	});
 
+	it('returns defaults for non-object values such as a null settings file', () => {
+		expect(normalizeConfig(null)).toEqual(DEFAULT_CONFIG);
+		expect(normalizeConfig('dark')).toEqual(DEFAULT_CONFIG);
+		expect(normalizeConfig([1, 2])).toEqual(DEFAULT_CONFIG);
+	});
+
 	it('keeps valid values', () => {
 		const cfg = { maxDepartures: 6, updateInterval: 15, theme: 'light', colorMode: 'mono' };
 		expect(normalizeConfig(cfg)).toEqual(cfg);

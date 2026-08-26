@@ -14,12 +14,13 @@ function positiveInt(value, fallback) {
 }
 
 /** Coerce a possibly hand-edited or malformed config into a fully valid one. */
-export function normalizeConfig(raw = {}) {
+export function normalizeConfig(raw) {
+	const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
 	return {
-		...raw,
-		maxDepartures: positiveInt(raw.maxDepartures, DEFAULT_CONFIG.maxDepartures),
-		updateInterval: positiveInt(raw.updateInterval, DEFAULT_CONFIG.updateInterval),
-		theme: THEMES.includes(raw.theme) ? raw.theme : DEFAULT_CONFIG.theme,
-		colorMode: COLOR_MODES.includes(raw.colorMode) ? raw.colorMode : DEFAULT_CONFIG.colorMode
+		...source,
+		maxDepartures: positiveInt(source.maxDepartures, DEFAULT_CONFIG.maxDepartures),
+		updateInterval: positiveInt(source.updateInterval, DEFAULT_CONFIG.updateInterval),
+		theme: THEMES.includes(source.theme) ? source.theme : DEFAULT_CONFIG.theme,
+		colorMode: COLOR_MODES.includes(source.colorMode) ? source.colorMode : DEFAULT_CONFIG.colorMode
 	};
 }
