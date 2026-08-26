@@ -1,3 +1,7 @@
+export const DEFAULT_LOGO_URL =
+	'https://opentransitsoftwarefoundation.org/images/logos/onebusaway.svg';
+export const DEFAULT_REGION_NAME = 'Waystation';
+
 export const SITE_TOKENS = {
 	brandRed: { cssVar: '--color-brand-red', label: 'Alert Red', defaultHex: '#eb3223' },
 	brandBlue: { cssVar: '--color-brand-blue', label: 'Highlight Blue', defaultHex: '#0087e8' },
@@ -40,6 +44,9 @@ export const BRANDING_DEFAULTS = Object.freeze({
 });
 
 const HEX_COLOR = /^#[0-9a-fA-F]{6}$/;
+// Both values are embedded into <title>, the favicon, and every board header, so bound them.
+const MAX_REGION_NAME_LENGTH = 120;
+const MAX_LOGO_URL_LENGTH = 2048;
 
 export function isValidLogoUrl(url) {
 	try {
@@ -54,8 +61,14 @@ function brandingError(key, value) {
 	if (COLOR_KEYS.has(key) && !HEX_COLOR.test(value)) {
 		return `Branding color ${key} must be a 6-digit hex value like #1a2b3c`;
 	}
-	if (key === 'logoUrl' && !isValidLogoUrl(value)) {
-		return 'Logo URL must be an http or https URL';
+	if (key === 'logoUrl') {
+		if (!isValidLogoUrl(value)) return 'Logo URL must be an http or https URL';
+		if (value.length > MAX_LOGO_URL_LENGTH) {
+			return `Logo URL must be at most ${MAX_LOGO_URL_LENGTH} characters`;
+		}
+	}
+	if (key === 'regionName' && value.trim().length > MAX_REGION_NAME_LENGTH) {
+		return `Agency name must be at most ${MAX_REGION_NAME_LENGTH} characters`;
 	}
 	return '';
 }

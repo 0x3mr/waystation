@@ -49,6 +49,13 @@ describe('validateBranding', () => {
 		expect(validateBranding({ boardBg: '#AbCdEf', logoUrl: 'http://a.b/c' })).toEqual([]);
 	});
 
+	it('bounds regionName and logoUrl length', () => {
+		expect(validateBranding({ regionName: 'x'.repeat(121) })).toHaveLength(1);
+		expect(validateBranding({ regionName: 'x'.repeat(120) })).toEqual([]);
+		expect(validateBranding({ logoUrl: `https://a.b/${'x'.repeat(2048)}` })).toHaveLength(1);
+		expect(normalizeBranding({ regionName: 'x'.repeat(121) }).regionName).toBe('');
+	});
+
 	it('reports each malformed field', () => {
 		const errors = validateBranding({ boardBg: '#fff', logoUrl: 'ftp://x', regionName: 1 });
 		expect(errors).toHaveLength(3);

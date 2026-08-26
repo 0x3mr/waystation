@@ -1,10 +1,15 @@
 <script>
-	import { invalidateAll } from '$app/navigation';
+	import { invalidate } from '$app/navigation';
 	import { onMount } from 'svelte';
 	import { formatSeconds } from '$lib/formatters';
 	import { COLOR_MODES, THEMES, normalizeConfig } from '$lib/config/defaults.js';
 	import { setLocale } from '$lib/paraglide/runtime';
-	import { SITE_TOKENS, BOARD_TOKENS, validateBranding } from '$lib/config/branding.js';
+	import {
+		SITE_TOKENS,
+		BOARD_TOKENS,
+		isValidLogoUrl,
+		validateBranding
+	} from '$lib/config/branding.js';
 	import { Power, Plus, Minus } from '@lucide/svelte';
 
 	import Header from '$components/navigation/header.svelte';
@@ -18,7 +23,10 @@
 	let saveErrors = $state([]);
 
 	// Live preview of the unsaved branding; `data` carries the env-var fallbacks from the layout.
-	const logoUrl = $derived(localConfig.branding.logoUrl || data.logoUrl);
+	// Only preview a complete http(s) URL so partial keystrokes never become <img src> requests.
+	const logoUrl = $derived(
+		isValidLogoUrl(localConfig.branding.logoUrl) ? localConfig.branding.logoUrl : data.logoUrl
+	);
 	const regionName = $derived(localConfig.branding.regionName || data.regionName);
 
 	async function saveChanges() {
@@ -43,8 +51,10 @@
 			return;
 		}
 
-		// Re-run the root layout load so the title, favicon, and branding stylesheet reflect the save.
-		await invalidateAll();
+		// Re-run the root layout load so the title, favicon, and branding stylesheet reflect the save,
+		// then resync the form with what the server actually persisted (e.g. trimmed names).
+		await invalidate('app:config');
+		localConfig = normalizeConfig(data.config);
 	}
 
 	async function resetChanges() {

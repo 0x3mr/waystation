@@ -1,7 +1,7 @@
 // The multi-stop grid is designed for up to six cards (see multi-stop-board.svelte).
 const MAX_STOPS = 6;
 
-export async function load({ params, parent }) {
+export function load({ params }) {
 	// Dedupe and drop empty segments so keyed cards never collide and no fetch targets ''.
 	const stopIDs = [
 		...new Set(
@@ -12,6 +12,6 @@ export async function load({ params, parent }) {
 		)
 	].slice(0, MAX_STOPS);
 
-	const { config } = await parent();
-	return { stopIDs, config };
+	// `config`, `logoUrl`, and `regionName` arrive merged in from the root layout load.
+	return { stopIDs };
 }
