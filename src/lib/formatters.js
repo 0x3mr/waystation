@@ -445,7 +445,7 @@ export function parseStopDepartures(json, id) {
 const translationCache = new Map();
 
 export function translate(text, targetLang) {
-	const key = `${targetLang} ${text}`;
+	const key = `${targetLang}${text}`;
 	let pending = translationCache.get(key);
 	if (!pending) {
 		pending = fetchTranslation(text, targetLang).catch((err) => {
@@ -474,4 +474,43 @@ async function fetchTranslation(text, targetLang) {
 
 	const body = await res.json();
 	return body[0].map((chunk) => chunk[0]).join('');
+}
+
+/**
+ * Parses and validates the `screen` / `screens` query params used to split one
+ * stop's departures across multiple physical displays.
+ *
+ * Invalid or out-of-range input never throws — it silently falls back to the
+ * single-screen default so a malformed URL degrades to normal behavior rather
+ * than breaking the board.
+ *
+ * @param {URLSearchParams} searchParams
+ * @returns {{ screen: number, screens: number }}
+ */
+export function parseScreenParams(searchParams) {
+	const rawScreens = Number(searchParams.get('screens'));
+	const screens = Number.isInteger(rawScreens) && rawScreens >= 1 ? rawScreens : 1;
+
+	const rawScreen = Number(searchParams.get('screen'));
+	const screen =
+		Number.isInteger(rawScreen) && rawScreen >= 1 && rawScreen <= screens ? rawScreen : 1;
+
+	return { screen, screens };
+}
+
+/**
+ * Slices a sorted departures array into the portion owned by one screen in a
+ * multi-screen wall. Each screen computes this independently and identically —
+ * no coordination between displays.
+ *
+ * @param {Array} arrivals - Full sorted/deduped departures list for the stop.
+ * @param {number} screen  - 1-indexed screen number.
+ * @param {number} screens - Total number of screens sharing this stop.
+ * @returns {Array} The slice of `arrivals` this screen should render.
+ */
+export function paginateArrivals(arrivals, screen, screens) {
+	if (screens <= 1) return arrivals;
+	const pageSize = Math.ceil(arrivals.length / screens);
+	const start = (screen - 1) * pageSize;
+	return arrivals.slice(start, start + pageSize);
 }

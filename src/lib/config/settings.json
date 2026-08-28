@@ -3,5 +3,29 @@
 	"updateInterval": 30,
 	"theme": "system",
 	"colorMode": "color",
-	"branding": {}
+	"branding": {
+		"brandRed": "",
+		"brandBlue": "",
+		"brandDarkblue": "",
+		"brandDarkerblue": "",
+		"brandGray": "",
+		"obaGreen": "",
+		"boardBg": "",
+		"boardBgElevated": "",
+		"boardInk": "",
+		"boardInkDim": "",
+		"boardInkMute": "",
+		"boardRule": "",
+		"boardRuleStrong": "",
+		"boardAccent": "",
+		"boardBadgeBg": "",
+		"boardBadgeEdge": "",
+		"boardBadgeInk": "",
+		"boardOntime": "",
+		"boardEarly": "",
+		"boardLate": "",
+		"boardSched": "",
+		"logoUrl": "",
+		"regionName": ""
+	}
 }

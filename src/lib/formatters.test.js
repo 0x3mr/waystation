@@ -16,7 +16,9 @@ import {
 	removeDuplicates,
 	formatBoardDeparture,
 	parseStopDepartures,
-	diffArrivals
+	diffArrivals,
+	parseScreenParams,
+	paginateArrivals
 } from '$lib/formatters';
 
 afterEach(() => {
@@ -404,5 +406,57 @@ describe('parseStopDepartures stop metadata', () => {
 			}
 		};
 		expect(parseStopDepartures(json, '1_74439').stopCode).toBe('74439');
+	});
+});
+
+describe('parseScreenParams', () => {
+	test('defaults to a single screen when params are absent', () => {
+		expect(parseScreenParams(new URLSearchParams())).toEqual({ screen: 1, screens: 1 });
+	});
+
+	test('parses valid screen/screens', () => {
+		expect(parseScreenParams(new URLSearchParams('screen=2&screens=3'))).toEqual({
+			screen: 2,
+			screens: 3
+		});
+	});
+
+	test('clamps an out-of-range screen back to 1', () => {
+		expect(parseScreenParams(new URLSearchParams('screen=99&screens=3')).screen).toBe(1);
+		expect(parseScreenParams(new URLSearchParams('screen=0&screens=3')).screen).toBe(1);
+	});
+
+	test('falls back to defaults for a negative or non-numeric screens', () => {
+		expect(parseScreenParams(new URLSearchParams('screens=-1')).screens).toBe(1);
+		expect(parseScreenParams(new URLSearchParams('screens=abc')).screens).toBe(1);
+	});
+});
+
+describe('paginateArrivals', () => {
+	const nine = Array.from({ length: 9 }, (_, i) => ({ id: i }));
+
+	test('returns the full list unchanged when screens is 1 or absent', () => {
+		expect(paginateArrivals(nine, 1, 1)).toEqual(nine);
+	});
+
+	test('splits evenly across screens with no overlap and no gaps', () => {
+		const s1 = paginateArrivals(nine, 1, 3);
+		const s2 = paginateArrivals(nine, 2, 3);
+		const s3 = paginateArrivals(nine, 3, 3);
+		expect([...s1, ...s2, ...s3]).toEqual(nine);
+		expect(s1).toHaveLength(3);
+		expect(s2).toHaveLength(3);
+		expect(s3).toHaveLength(3);
+	});
+
+	test('last screen gets the remainder when the list does not divide evenly', () => {
+		const ten = Array.from({ length: 10 }, (_, i) => ({ id: i }));
+		const s1 = paginateArrivals(ten, 1, 3);
+		const s2 = paginateArrivals(ten, 2, 3);
+		const s3 = paginateArrivals(ten, 3, 3);
+		expect(s1).toHaveLength(4);
+		expect(s2).toHaveLength(4);
+		expect(s3).toHaveLength(2);
+		expect([...s1, ...s2, ...s3]).toEqual(ten);
 	});
 });

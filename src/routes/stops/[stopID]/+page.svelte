@@ -7,6 +7,7 @@
 	import {
 		diffArrivals,
 		formatBoardDeparture,
+		paginateArrivals,
 		parseStopDepartures,
 		removeDuplicates,
 		sortEarliestDepartures
@@ -49,6 +50,15 @@
 	let fetchInFlight = false;
 	const refreshIntervalMs = $derived(data.config.updateInterval * 1000);
 	const maxDepartures = $derived(data.config.maxDepartures);
+
+	// Multi-screen pagination: when this stop's departures are split across
+	// several physical displays, each one keeps only its own slice of the sorted
+	// list. `screen`/`screens` default to 1, so behavior is unchanged when absent.
+	// `maxDepartures` becomes the total cap across every screen in the wall, not a
+	// per-screen cap, so it's applied before the slice rather than after.
+	const pagedArrivals = $derived(
+		paginateArrivals((primary?.arrivals ?? []).slice(0, maxDepartures), data.screen, data.screens)
+	);
 
 	async function fetchStop(id) {
 		const response = await fetch(`/api/oba/arrivals-and-departures-for-stop/${id}`);
@@ -191,14 +201,14 @@
 				agencyLogo={data.logoUrl}
 				stopId={primary?.code ?? ''}
 				stopName={primary?.name ?? ''}
-				arrivals={primary?.arrivals ?? []}
+				arrivals={pagedArrivals}
 				alert={activeAlert}
 				{now}
 				{lastUpdatedAt}
 				{isStale}
 				{fetchFailed}
 				{failedStopIds}
-				rowCount={Math.min(maxDepartures, 5)}
+				rowCount={Math.min(Math.ceil(maxDepartures / data.screens), 5)}
 			/>
 		{/if}
 	</div>
